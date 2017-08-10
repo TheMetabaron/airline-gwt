@@ -29,4 +29,6 @@ public interface AirlineServiceAsync {
   void getHelpMenu(AsyncCallback<String> async);
 
   void postFlight(String flight, AsyncCallback<Void> async);
+
+  void searchFlights(String text, AsyncCallback<String> asyncCallback);
 }

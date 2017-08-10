@@ -1,6 +1,7 @@
 package edu.pdx.cs410J.jscott.server;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import edu.pdx.cs410J.AirportNames;
 import edu.pdx.cs410J.jscott.client.Airline;
 import edu.pdx.cs410J.jscott.client.Flight;
 import edu.pdx.cs410J.jscott.client.AirlineService;
@@ -11,6 +12,7 @@ import java.io.StringWriter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.StringTokenizer;
 
@@ -32,6 +34,52 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
     prettyPrinter.dump(airline);
     return prettyPrinter.getPrettyText();
 
+  }
+
+  @Override
+  public String searchFlights(String text){
+    if(airline == null){
+      return "There is no flight information on file";
+    }
+
+    //Parse Airports
+    StringTokenizer st = new StringTokenizer(text, " ");
+    String source;
+    String dest;
+    if(st.countTokens() != 2){
+      throw new IllegalArgumentException("To search for flights enter two three digit airport codes eg: PDX LAX");
+    }
+    source = st.nextToken();
+    dest = st.nextToken();
+    if(!source.matches("[a-zA-z]{3}") || !dest.matches("[a-zA-z]{3}")){
+      throw new IllegalArgumentException("To search for flights enter two three digit airport codes eg: PDX LAX\"");
+    }
+
+    int format = DateFormat.SHORT;
+    DateFormat df = DateFormat.getDateTimeInstance(format, format);
+    boolean isThereAMatch = false;
+    long duration = 0;
+    StringBuilder sb = new StringBuilder();
+    ArrayList<Flight> flights = new ArrayList<>(airline.getFlights());
+    for(Flight f: flights){
+      if (source.equalsIgnoreCase(f.getSource()) && dest.equalsIgnoreCase(f.getDestination())) {
+        isThereAMatch = true;
+        sb.append("Flight Number:       ").append(f.getNumber());
+        sb.append("\nDeparture Airport:   ").append(AirportNames.getName(f.getSource()));
+        sb.append("\nDeparture Date:      ").append(df.format(f.getDeparture()));
+        sb.append("\nDestination Airport: ").append(AirportNames.getName(f.getDestination()));
+        sb.append("\nArrival Date:        ").append(df.format(f.getArrival()));
+        duration = f.getArrival().getTime() - f.getDeparture().getTime();
+        duration = duration /1000/60;
+        sb.append("\nFlight Duration:     ").append(duration).append(" minutes");
+        sb.append("\n-------------------------------------------------\n");
+      }
+    }
+    if(isThereAMatch == false){
+      sb.append("No matches found");
+    }
+
+    return sb.toString();
   }
 
   @Override
@@ -110,6 +158,7 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
 
     while(st.hasMoreTokens()){
       args[i] = st.nextToken();
+      //TODO: Add capability to handle longer airline name
       /*if(args[1].contains("\"")){
         args[i] = args[i].substring(1);
         args[i] = args[i] + st.nextToken("\"");

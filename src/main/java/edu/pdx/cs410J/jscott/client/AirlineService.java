@@ -36,4 +36,7 @@ public interface AirlineService extends RemoteService {
    * @param flight
    */
   void postFlight(String flight) throws IllegalArgumentException;
+
+  String searchFlights(String text) throws IllegalArgumentException;
+
 }

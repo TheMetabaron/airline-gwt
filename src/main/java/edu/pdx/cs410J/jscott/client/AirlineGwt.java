@@ -45,6 +45,12 @@ public class AirlineGwt implements EntryPoint {
   @VisibleForTesting
   TextBox boxForFlightInfo;
 
+  @VisibleForTesting
+  Button searchForFlightButton;
+
+  @VisibleForTesting
+  TextBox boxForFlightSearch;
+
   RichTextArea textArea;
 
   public AirlineGwt() {
@@ -114,6 +120,18 @@ public class AirlineGwt implements EntryPoint {
       }
     });
 
+    searchForFlightButton = new Button("Search Flights");
+    searchForFlightButton.setPixelSize(200, 50);
+    searchForFlightButton.addClickHandler(new ClickHandler() {
+      @Override
+      public void onClick(ClickEvent clickEvent) {
+        searchFlights(boxForFlightSearch.getText());
+      }
+    });
+
+
+
+
     showUndeclaredExceptionButton = new Button("Show undeclared exception");
     showUndeclaredExceptionButton.addClickHandler(new ClickHandler() {
       @Override
@@ -149,6 +167,9 @@ public class AirlineGwt implements EntryPoint {
     Label labelForPostFlightBox = new Label("Enter Flight Info Here:");
     boxForFlightInfo = new TextBox();
     boxForFlightInfo.setVisibleLength(70);
+    Label labelForFlightSearchBox = new Label("Enter Source and Destination Airports Here:");
+    boxForFlightSearch = new TextBox();
+    boxForFlightSearch.setVisibleLength(27);
 
     textArea = new RichTextArea();
     textArea.setWidth("500px");
@@ -156,16 +177,41 @@ public class AirlineGwt implements EntryPoint {
 
     panel.add(title);
     panel.add(showAirlineButton);
+
     panel.add(labelForPostFlightBox);
     panel.add(boxForFlightInfo);
     panel.add(postFlightButton);
+
+    panel.add(labelForFlightSearchBox);
+    panel.add(boxForFlightSearch);
+    panel.add(searchForFlightButton);
+
     panel.add(showUndeclaredExceptionButton);
     panel.add(showDeclaredExceptionButton);
     panel.add(showClientSideExceptionButton);
+
     panel.add(showHelpMenuButton);
     panel.add(textArea);
 
-    //textArea.getFormatter().setBackColor("Blue");
+  }
+
+  private void searchFlights(String text) {
+    if( text.equalsIgnoreCase("")){
+      alerter.alert("Please enter flight info in text box");
+      return;
+    }
+    logger.info("Searching for matching flights");
+    airlineService.searchFlights(text, new AsyncCallback<String >() {
+      @Override
+      public void onFailure(Throwable throwable) {
+        alerter.alert(throwable.getMessage());
+      }
+
+      @Override
+      public void onSuccess(String flights) {
+        textArea.setText(flights);
+      }
+    });
   }
 
   private void postFlight(String flight) {
@@ -233,7 +279,7 @@ public class AirlineGwt implements EntryPoint {
 
       @Override
       public void onFailure(Throwable ex) {
-        alertOnException(ex);
+        alerter.alert(ex.getMessage());
       }
 
       @Override
