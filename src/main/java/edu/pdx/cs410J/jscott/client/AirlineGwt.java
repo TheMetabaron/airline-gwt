@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.shared.UmbrellaException;
@@ -157,6 +158,7 @@ public class AirlineGwt implements EntryPoint {
     });
 
     showHelpMenuButton = new Button("Help");
+    showHelpMenuButton.setPixelSize(200, 50);
     showHelpMenuButton.addClickHandler(new ClickHandler() {
       @Override
       public void onClick(ClickEvent clickEvent) {
@@ -164,7 +166,9 @@ public class AirlineGwt implements EntryPoint {
       }
     });
 
-    Label labelForPostFlightBox = new Label("Enter Flight Info Here:");
+    Label blankSpaceLabel = new Label("    ");
+    Label labelForPostFlightBox = new Label("To enter a flight type the flight info in this Box in the following format:");
+    Label labelforPostFlightBox2 = new Label("AirlineName FlightNumber Source DepartureDate DestinationAirport DestinationDate ");
     boxForFlightInfo = new TextBox();
     boxForFlightInfo.setVisibleLength(70);
     Label labelForFlightSearchBox = new Label("Enter Source and Destination Airports Here:");
@@ -177,18 +181,23 @@ public class AirlineGwt implements EntryPoint {
 
     panel.add(title);
     panel.add(showAirlineButton);
+    panel.add(blankSpaceLabel);
 
     panel.add(labelForPostFlightBox);
+    panel.add(labelforPostFlightBox2);
     panel.add(boxForFlightInfo);
     panel.add(postFlightButton);
+
 
     panel.add(labelForFlightSearchBox);
     panel.add(boxForFlightSearch);
     panel.add(searchForFlightButton);
 
+    /*
     panel.add(showUndeclaredExceptionButton);
     panel.add(showDeclaredExceptionButton);
     panel.add(showClientSideExceptionButton);
+    */
 
     panel.add(showHelpMenuButton);
     panel.add(textArea);
@@ -197,7 +206,7 @@ public class AirlineGwt implements EntryPoint {
 
   private void searchFlights(String text) {
     if( text.equalsIgnoreCase("")){
-      alerter.alert("Please enter flight info in text box");
+      alerter.alert("Please enter flight info in text box in the format <src dest> for example PDX LAX");
       return;
     }
     logger.info("Searching for matching flights");
@@ -226,8 +235,6 @@ public class AirlineGwt implements EntryPoint {
               @Override
               public void onFailure(Throwable throwable) {
                 alerter.alert(throwable.getMessage());
-                //TODO: add usage method???
-
               }
 
               @Override
@@ -322,7 +329,6 @@ public class AirlineGwt implements EntryPoint {
   private void setupUI() {
     RootPanel rootPanel = RootPanel.get();
     VerticalPanel panel = new VerticalPanel();
-    //TODO: Center Panel?????
 
     rootPanel.add(panel);
     addWidgets(panel);

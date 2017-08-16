@@ -75,7 +75,7 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
         sb.append("\n-------------------------------------------------\n");
       }
     }
-    if(isThereAMatch == false){
+    if(!isThereAMatch){
       sb.append("No matches found");
     }
 
@@ -109,34 +109,34 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
     StringBuilder sb = new StringBuilder();
 
     sb.append("***********************************************************\n")
-            .append("* README FOR PROJECT FIVE: A RICH INTERNET APPLICATION FOR AN AIRLINE *\n")
+            .append("*               README FOR PROJECT FIVE:                  *\n" +
+                    "*      A RICH INTERNET APPLICATION FOR AN AIRLINE         *\n")
             .append("***********************************************************\n");
     sb.append("This program was written by Scott Jones for CS510J\n");
     sb.append("The purpose of this program is to simulate an Airline booking application.\n" +
-            "The current functionality includes the ability to enter the information for\n" +
+            "The functionality includes the ability to enter the information for\n" +
             "a flight in a text box and that information will be entered into the\n" +
-            "fundamental Airline and Flight objects on the server.\n" +
-            "In this project you will extend your airline application to support an airline " +
-            "server that provides REST-ful web services to an airline client.\n" +
-            "The list of Flights is ordered based on Departure airport and Departure time.\n");
+            "The list of Flights is ordered based on Departure airport and Departure time.\n " +
+            "The Show Airline button displays all flights entered for the airline so far. " +
+            "The Add Flight button adds the flight data entered in the text box. If the information" +
+            "matches the USAGE, the flight is added to the list of flights for that airline. " +
+            "The Search Flight button searches for all flights that match the source and " +
+            "desination airports. ");
     sb.append("USAGE\n\n" +
-            "java -jar target/airline.jar [options] <args>\n\n" +
+            "Add Flight Text box:" +
+            "name flightNumber src departTime dest arriveTime\n\n" +
             "This program expects the following arguments in the order listed\n" +
             "name\t\t\tThe name of the airline\n" +
             "flightNumber\t\tThe flight number\n" +
             "src\t\t\tThree letter code of the departure airport\n" +
-            "departTime\t\tTThe departure date and time (see note)\n" +
+            "departTime\t\tThe departure date and time (see note)\n" +
             "dest\t\t\tThree letter code of the arrival airport\n" +
             "arriveTime\t\tArrival date and time (see note)\n");
     sb.append("note: Date and time should be in the format: mm/dd/yyyy hh:mm am/pm");
-    sb.append("\nOptions:\n" +
-            "-host hostname\t\tHost computer on which the server runs\n" +
-            "-port port \t\tPort on which the server is listening\n" +
-            "-print\t\t\tPrints a description of the new flight\n" +
-            "-README\t\t\tPrints a README for this project and exits\n" +
-            "-search\t\t\tSearch for flights\n" +
-            "If the -search option is provided, only the name, src and dest \n" +
-            "are required. The program will print  out all of the direct flights " +
+    sb.append("\n\nSearch Flights text box:" +
+            "src dest" +
+            "Only the three digit src and dest codes will be accepted.  \n" +
+            "The program will print  out all of the direct flights " +
             "that originate at the src airport and terminate at the dest airport.\n");
     return sb.toString();
   }
@@ -150,20 +150,27 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
     StringTokenizer st = new StringTokenizer(flight, " ");
     String [] args = new String [6];
     int i = 0;
+    char firstChar;
 
-    if(st.countTokens() != 10){
+    if(st.countTokens() < 10 || st.countTokens() > 11){
       //incorrect number of arguments
+      throw new IllegalArgumentException("Incorrect Number of arguments");
+    }
+    firstChar = flight.charAt(0);
+    if(st.countTokens() != 10 && firstChar != '\"'){
       throw new IllegalArgumentException("Incorrect Number of arguments");
     }
 
     while(st.hasMoreTokens()){
       args[i] = st.nextToken();
       //TODO: Add capability to handle longer airline name
-      /*if(args[1].contains("\"")){
+      firstChar = args[i].charAt(0);
+      if(firstChar == '\"'){
         args[i] = args[i].substring(1);
         args[i] = args[i] + st.nextToken("\"");
+        st.nextToken(" ");
         }
-      */
+
       if(i ==3 || i == 5){
         args[i] = args[i] + " " + st.nextToken() + " " + st.nextToken();
       }
@@ -171,11 +178,10 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
       if(i == 6){
         continue;
       }
-      }
+    }
 
     checkCommandLineArguments(args);
 
-    //TODO: USE DateTimeFormat (shared)?? so its the same on client and server?
     DateFormat format = new SimpleDateFormat();
     Date departureDate = new Date();
     Date arrivalDate = new Date();
@@ -183,7 +189,7 @@ public class AirlineServiceImpl extends RemoteServiceServlet implements AirlineS
       departureDate = format.parse(args[3]);
       arrivalDate = format.parse(args[5]);
     }catch(ParseException ex){
-      throw new IllegalArgumentException("Caught Parse exception when translating dates");
+      throw new IllegalArgumentException("Invalid input: Dates must be entered in the following format: MM/DD/YYYY HH:MM AM/PM");
     }
 
     //Create new airline if first flight
